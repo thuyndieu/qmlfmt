@@ -26,111 +26,129 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QtCore>
-#include <QCoreApplication>
-#include <QCommandLineParser>
-#include <QCommandLineOption>
 #include "qmlfmt.h"
+#include <QCommandLineOption>
+#include <QCommandLineParser>
+#include <QCoreApplication>
+#include <QtCore>
 
-int ParseIntOption(QCommandLineParser &parser, QCommandLineOption &option)
-{
-    bool ok = true;
-    int optionValue = parser.value(option).toInt(&ok);
-    if (!ok || optionValue < 0)
-    {
-        QTextStream(stderr) << "Invalid value for option " << option.names().last() << "\n";
-        optionValue = -1;
-    }
+int ParseIntOption(QCommandLineParser &parser, QCommandLineOption &option) {
+  bool ok = true;
+  int optionValue = parser.value(option).toInt(&ok);
+  if (!ok || optionValue < 0) {
+    QTextStream(stderr) << "Invalid value for option " << option.names().last()
+                        << "\n";
+    optionValue = -1;
+  }
 
-    return optionValue;
+  return optionValue;
 }
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("qmlfmt");
+int main(int argc, char *argv[]) {
+  QCoreApplication app(argc, argv);
+  QCoreApplication::setApplicationName("qmlfmt");
 
-#ifdef QMLFMT_VERSION
-    QCoreApplication::setApplicationVersion(QMLFMT_VERSION);
-#endif // QMLFMT_VERSION
-    
-    QCommandLineParser parser;
-    parser.setApplicationDescription(
-        "qmlfmt formats QML files."
-        "\n\n"
-        "Without an explicit path, it processes the standard input. "
-        "Given a file, it operates on that file; given a directory, it operates on all qml files in that directory, recursively. "
-        "(Files starting with a period are ignored.) By default, qmlfmt prints the reformatted sources to standard output."
-    );
+#if defined(QMLFMT_VERSION) && defined(QTCREATOR_GIT_SHA) &&                   \
+    defined(QTCREATOR_VERSION)
+  QString version = "%1 with Qt-Creator %2 (%3)";
+  QCoreApplication::setApplicationVersion(
+      version.arg(QMLFMT_VERSION, QTCREATOR_VERSION, QTCREATOR_GIT_SHA));
+#endif // check qmlfmt version
 
-    QCommandLineOption diffOption(QStringList() << "d" << "diff",
-        "Do not print reformatted sources to standard output. "
-        "If a file\'s formatting is different than qmlfmt\'s, print diffs "
-        "to standard output.");
+  QCommandLineParser parser;
+  parser.setApplicationDescription(
+      "qmlfmt formats QML files."
+      "\n\n"
+      "Without an explicit path, it processes the standard input. "
+      "Given a file, it operates on that file; given a directory, it operates "
+      "on all qml files in that directory, recursively. "
+      "(Files starting with a period are ignored.) By default, qmlfmt prints "
+      "the reformatted sources to standard output.");
 
-    QCommandLineOption errorOption(QStringList() << "e" << "error", "Print all errors.");
+  QCommandLineOption diffOption(
+      QStringList() << "d"
+                    << "diff",
+      "Do not print reformatted sources to standard output. "
+      "If a file\'s formatting is different than qmlfmt\'s, print diffs "
+      "to standard output.");
 
-    QCommandLineOption listOption(QStringList() << "l" << "list",
-        "Do not print reformatted sources to standard output. "
-        "If a file\'s formatting is different from qmlfmt\'s, print its name "
-        "to standard output.");
+  QCommandLineOption errorOption(QStringList() << "e"
+                                               << "error",
+                                 "Print all errors.");
 
-    QCommandLineOption overwriteOption(QStringList() << "w" << "overwrite",
-        "Do not print reformatted sources to standard output. "
-        "If a file\'s formatting is different from qmlfmt\'s, overwrite it "
-        "with qmlfmt\'s version.");
+  QCommandLineOption listOption(
+      QStringList() << "l"
+                    << "list",
+      "Do not print reformatted sources to standard output. "
+      "If a file\'s formatting is different from qmlfmt\'s, print its name "
+      "to standard output.");
 
-    QCommandLineOption indentSizeOption(QStringList() << "i" << "indent", "How many spaces to use for indentation", "indent", "4");
-    QCommandLineOption tabSizeOption(QStringList() << "t" << "tab-size", "How many spaces to replace tabs with", "tab size", "4");
+  QCommandLineOption overwriteOption(
+      QStringList() << "w"
+                    << "overwrite",
+      "Do not print reformatted sources to standard output. "
+      "If a file\'s formatting is different from qmlfmt\'s, overwrite it "
+      "with qmlfmt\'s version.");
 
+  QCommandLineOption indentSizeOption(QStringList() << "i"
+                                                    << "indent",
+                                      "How many spaces to use for indentation",
+                                      "indent", "4");
+  QCommandLineOption tabSizeOption(QStringList() << "t"
+                                                 << "tab-size",
+                                   "How many spaces to replace tabs with",
+                                   "tab size", "4");
 
-    QMultiMap<QmlFmt::Option, QCommandLineOption> optionMap = {
-        { QmlFmt::Option::PrintDiff, diffOption },
-        { QmlFmt::Option::ListFileName, listOption },
-        { QmlFmt::Option::PrintError, errorOption },
-        { QmlFmt::Option::OverwriteFile, overwriteOption },
-        { QmlFmt::Option::None, indentSizeOption},
-        { QmlFmt::Option::None, tabSizeOption}
-    };
+  QMultiMap<QmlFmt::Option, QCommandLineOption> optionMap = {
+      {QmlFmt::Option::PrintDiff, diffOption},
+      {QmlFmt::Option::ListFileName, listOption},
+      {QmlFmt::Option::PrintError, errorOption},
+      {QmlFmt::Option::OverwriteFile, overwriteOption},
+      {QmlFmt::Option::None, indentSizeOption},
+      {QmlFmt::Option::None, tabSizeOption}};
 
-    // set up options
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addOptions(optionMap.values());
-    parser.addPositionalArgument("path", "file(s) or directory to process. If not set, qmlfmt will process the standard input.");
+  // set up options
+  parser.addHelpOption();
+  parser.addVersionOption();
+  parser.addOptions(optionMap.values());
+  parser.addPositionalArgument("path",
+                               "file(s) or directory to process. If not set, "
+                               "qmlfmt will process the standard input.");
 
-    // process command line arguments
-    parser.process(app);
+  // process command line arguments
+  parser.process(app);
 
-    // validate arguments
-    if ((parser.isSet(overwriteOption) || parser.isSet(listOption)) && parser.positionalArguments().count() == 0)
-    {
-        QTextStream(stderr) << "Cannot combine -" << overwriteOption.names().last() << " and -" << listOption.names().last()
-            << " with standard input\n";
-        return 1;
-    }
-    else if (parser.isSet(diffOption) + parser.isSet(overwriteOption) + parser.isSet(listOption) > 1)
-    {
-        QTextStream(stderr) << "-" << diffOption.names().last() << ", -" << overwriteOption.names().last() << " and -" <<
-            listOption.names().last() << " are mutually exclusive\n";
-        return 1;
-    }
+  // validate arguments
+  if ((parser.isSet(overwriteOption) || parser.isSet(listOption)) &&
+      parser.positionalArguments().count() == 0) {
+    QTextStream(stderr) << "Cannot combine -" << overwriteOption.names().last()
+                        << " and -" << listOption.names().last()
+                        << " with standard input\n";
+    return 1;
+  } else if (parser.isSet(diffOption) + parser.isSet(overwriteOption) +
+                 parser.isSet(listOption) >
+             1) {
+    QTextStream(stderr) << "-" << diffOption.names().last() << ", -"
+                        << overwriteOption.names().last() << " and -"
+                        << listOption.names().last()
+                        << " are mutually exclusive\n";
+    return 1;
+  }
 
-    int indentSize = ParseIntOption(parser, indentSizeOption);
-    int tabSize = ParseIntOption(parser, tabSizeOption);
+  int indentSize = ParseIntOption(parser, indentSizeOption);
+  int tabSize = ParseIntOption(parser, tabSizeOption);
 
-    if (tabSize < 0 || indentSize < 0)
-    {
-        return 1;
-    }
+  if (tabSize < 0 || indentSize < 0) {
+    return 1;
+  }
 
-    QmlFmt::Options options;
-    for (auto kvp = optionMap.constKeyValueBegin(); kvp != optionMap.constKeyValueEnd(); ++kvp)
-    {
-        if (parser.isSet((*kvp).second))
-            options |= (*kvp).first;
-    }
+  QmlFmt::Options options;
+  for (auto kvp = optionMap.constKeyValueBegin();
+       kvp != optionMap.constKeyValueEnd(); ++kvp) {
+    if (parser.isSet((*kvp).second))
+      options |= (*kvp).first;
+  }
 
-    QmlFmt qmlFmt(options, indentSize, tabSize);
-    return qmlFmt.Run(parser.positionalArguments());
+  QmlFmt qmlFmt(options, indentSize, tabSize);
+  return qmlFmt.Run(parser.positionalArguments());
 }

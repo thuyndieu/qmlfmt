@@ -36,8 +36,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC true)
 set(CMAKE_INCLUDE_CURRENT_DIR true)
 
-set(QMLFMT_VERSION 0.0 CACHE STRING "Version of qmlfmt")
-add_definitions(-DQMLFMT_VERSION="${BUILD_VERSION}")
+# Those enviroment variables are set in .yml file
+add_definitions(-DQMLFMT_VERSION="$ENV{QMLFMT_VERSION}"
+                -DQTCREATOR_GIT_SHA="$ENV{QTCREATOR_GIT_SHA}"
+                -DQTCREATOR_VERSION="$ENV{QTCREATOR_VERSION}")
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release CACHE STRING

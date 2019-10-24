@@ -26,24 +26,30 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QIODevice>
 #include <QString>
 
-class QmlFmt
-{
+class QmlFmt {
 public:
-    enum class Option { None = 0x0, ListFileName = 0x1, OverwriteFile = 0x2, PrintError = 0x4, PrintDiff = 0x8};
-    Q_DECLARE_FLAGS(Options, Option)
+  enum class Option {
+    None = 0x0,
+    ListFileName = 0x1,
+    OverwriteFile = 0x2,
+    PrintError = 0x4,
+    PrintDiff = 0x8
+  };
+  Q_DECLARE_FLAGS(Options, Option)
 
-    QmlFmt(Options options, int indentSize, int tabSize);
-    
-    int Run();
-    int Run(QStringList paths);
+  QmlFmt(Options options, int indentSize, int tabSize);
+
+  int Run();
+  int Run(QStringList paths);
 
 private:
-    Options m_options;
-    int m_indentSize;
-    int m_tabSize;
-    int InternalRun(QIODevice& input, const QString& path);
+  Options m_options;
+  int m_indentSize;
+  int m_tabSize;
+  int InternalRun(QIODevice &input, const QString &path);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QmlFmt::Options)
